@@ -1,0 +1,89 @@
+package web
+
+import "github.com/tigrisdata-community/tygen/models"
+
+templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, flashes []models.Flash) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>{ title }</title>
+			<link rel="stylesheet" href="/static/css/xess.css"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			if headArea != nil {
+				@headArea
+			}
+		</head>
+		<body id="top">
+			<main>
+				if navBar != nil {
+					<nav>
+						@navBar
+					</nav>
+				}
+				if len(flashes) > 0 {
+					@flashMessages(flashes)
+				}
+				<h1>{ title }</h1>
+				@bodyArea
+				if footer != nil {
+					<footer>
+						@footer
+					</footer>
+				}
+			</main>
+		</body>
+		<script src="/static/js/htmx.js"></script>
+	</html>
+}
+
+templ Simple(title string, body templ.Component, flashes []models.Flash) {
+	@Base(
+		title,
+		nil,
+		navBar(),
+		body,
+		nil,
+		flashes,
+	)
+}
+
+templ flashMessages(flashes []models.Flash) {
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+  	  // Auto-dismiss flash messages after 5 seconds
+    	const flashes = document.querySelectorAll('.flash');
+	  	flashes.forEach(flash => {
+  	    setTimeout(() => {
+    	    flash.style.opacity = '0';
+      	  setTimeout(() => flash.remove(), 300);
+	      }, 5000);
+  	  });
+		});
+	</script>
+	<div class="flash-container">
+		for _, flash := range flashes {
+			<div class={ "flash", "flash-" + flash.Kind }>
+				<span class="flash-message">
+					@templ.Raw(flash.Body)
+				</span>
+				<button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+			</div>
+		}
+	</div>
+}
+
+templ navBar() {
+	<a href="/" class="nav-brand">Your Brand</a>
+	<button class="nav-toggle" onclick="toggleNav()">☰</button>
+	<ul id="nav-menu">
+		<li><a href="/about">About</a></li>
+		<li><a href="/projects">Projects</a></li>
+		<li><a href="/blog">Blog</a></li>
+		<li><a href="/contact">Contact</a></li>
+	</ul>
+}
+
+templ NotFound(path string) {
+	<p>404: <code>{ path }</code></p>
+	<p>Sorry but the number you have reached is either not available or out of service. If you are reaching this message in error, please hang up and try your call again.</p>
+}
