@@ -8,25 +8,6 @@ group "default" {
   ]
 }
 
-target "devcontainer" {
-  context = "."
-  dockerfile = ".devcontainer/Dockerfile"
-  platforms = [
-    "linux/amd64",
-    "linux/arm64",
-  ]
-  cache-from = [
-    "type=registry,ref=ghcr.io/xe/project-template/devcontainer/cache"
-  ]
-  cache-to = [
-    "type=registry,ref=ghcr.io/xe/project-template/devcontainer/cache"
-  ]
-  pull = true
-  tags = [
-    "ghcr.io/xe/project-template/devcontainer:latest"
-  ]
-}
-
 target "web" {
   args = {
     ALPINE_VERSION = "${ALPINE_VERSION}"
@@ -41,6 +22,6 @@ target "web" {
   pull = true
   tags = [
     "ghcr.io/tigrisdata-community/tygen",
-    "ghcr.io/xe/project-template:${GITHUB_SHA}"
+    "ghcr.io/tigrisdata-community/tygen:${GITHUB_SHA}"
   ]
 }
