@@ -10,7 +10,9 @@ import (
 	templruntime "github.com/a-h/templ/runtime"
 )
 
-func Index() templ.Component {
+// ImageCarousel renders a Swiper‐powered carousel.
+// Pass as many image URLs as you like.
+func ImageCarousel(images ...string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,7 +33,160 @@ func Index() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<p>Hello, world!</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css\"><script src=\"https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js\" defer></script><div class=\"w-full\"><div class=\"swiper-container mySwiper relative\"><div class=\"swiper-wrapper\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for _, src := range images {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"swiper-slide\"><a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var2 templ.SafeURL
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(src)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 18, Col: 19}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" target=\"_blank\"><img src=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(src)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 20, Col: 17}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" alt=\"\" class=\"w-full h-96 object-cover rounded-lg\"></a></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"swiper-button-prev\"></div><div class=\"swiper-button-next\"></div><div class=\"swiper-pagination\"></div><style>\n\t\t\t\t.swiper-container {\n\t\t\t\t\toverflow: hidden;\n\t\t\t\t}\n\t\t\t\t.swiper-slide {\n\t\t\t\t\tdisplay: inline-block;\n\t\t\t\t}\n\t\t\t\t#form-container {\n\t\t\t\t\tposition: relative;\n\t\t\t\t\tz-index: 10;\n\t\t\t\t\tbackground: white;\n\t\t\t\t}\n\t\t\t\t.swiper-button-prev,\n\t\t\t\t.swiper-button-next,\n\t\t\t\t.swiper-pagination {\n\t\t\t\t\tdisplay: none;\n\t\t\t\t}\n\t\t\t\t.swiper-slide img {\n\t\t\t\t\twidth: 100%;\n\t\t\t\t\theight: auto;\n\t\t\t\t\taspect-ratio: 16 / 9;\n\t\t\t\t\tobject-fit: cover;\n\t\t\t\t}\n\t\t\t\t.swiper-container {\n\t\t\t\t\twidth: 100%;\n\t\t\t\t}\n\t\t\t</style></div></div><script>\n    document.addEventListener('DOMContentLoaded', function() {\n      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;\n\n      // Randomize slide order\n      const swiperWrapper = document.querySelector('.swiper-wrapper');\n      const slides = Array.from(swiperWrapper.children);\n      for (let i = slides.length - 1; i > 0; i--) {\n        const j = Math.floor(Math.random() * (i + 1));\n        [slides[i], slides[j]] = [slides[j], slides[i]];\n      }\n      slides.forEach(slide => swiperWrapper.appendChild(slide));\n\n      new Swiper('.mySwiper', {\n        loop: true,\n        autoplay: prefersReducedMotion ? false : { delay: 5000, disableOnInteraction: false },\n        navigation: {\n          prevEl: '.swiper-button-prev',\n          nextEl: '.swiper-button-next',\n        },\n        pagination: { el: '.swiper-pagination', clickable: true },\n        slidesPerView: 1,\n        spaceBetween: 0,\n      });\n    });\n  </script>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// QuestionsForm renders the HTMX‑backed form.
+func QuestionsForm() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div id=\"form-container\" class=\"max-w-lg mx-auto p-6 bg-white rounded-lg shadow space-y-6\"><form hx-post=\"/submit\" hx-target=\"#form-container\" hx-swap=\"innerHTML\"><div class=\"mb-4\"><h1 class=\"mb-[0.1rem] font-serif text-3xl text-center\">Tygen</h1></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ImageCarousel(
+			"/static/img/carousel/data-surfing-kanagawa.webp",
+			"/static/img/carousel/directly-to-you.webp",
+			"/static/img/carousel/ducklake-serenade.webp",
+			"/static/img/carousel/gotta-go-fast.webp",
+			"/static/img/carousel/nat-ty-sharing.webp",
+			"/static/img/carousel/office-datasets.webp",
+			"/static/img/carousel/pickleball.webp",
+			"/static/img/carousel/the-future-if.webp",
+			"/static/img/carousel/xiyatu.webp",
+		).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div><label for=\"whatIsThere\" class=\"block text-sm font-medium mb-1\">What is there?</label> <textarea id=\"whatIsThere\" name=\"whatIsThere\" placeholder=\"Ty is playing pickleball\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><label for=\"whatLike\" class=\"block text-sm font-medium mb-1\">What is it like?</label> <textarea id=\"whatLike\" name=\"whatLike\" placeholder=\"It is peaceful, serene, and natural\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><label for=\"whereIsIt\" class=\"block text-sm font-medium mb-1\">Where is it?</label> <textarea id=\"whereIsIt\" name=\"whereIsIt\" placeholder=\"Hyrule Field, there is a Sheikah Tower in the distance\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><p class=\"block text-sm font-medium mb-1\">What style?</p><div class=\"flex flex-wrap gap-4\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for _, s := range []string{"Cartoon", "Anime", "Watercolour", "Coloured Pencil"} {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<label class=\"inline-flex items-center\"><input type=\"radio\" name=\"style\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var5 string
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(s)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 155, Col: 17}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" required class=\"form-radio h-4 w-4 text-blue-600\"> <span class=\"ml-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(s)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 159, Col: 29}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></label>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div><div class=\"flex justify-center\"><button type=\"submit\" class=\"px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition\">Submit</button></div></form></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func Index() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"max-w-lg mx-auto\"><p>Hello, world!</p></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = QuestionsForm().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

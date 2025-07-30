@@ -7,14 +7,16 @@ templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, fla
 	<html>
 		<head>
 			<title>{ title }</title>
-			<link rel="stylesheet" href="/static/css/xess.css"/>
+			<link rel="stylesheet" href="/static/css/styles.css"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			if headArea != nil {
 				@headArea
 			}
+			<script src="/static/js/htmx.min.js"></script>
+			<script src="/static/js/htmx-ext-ws.min.js"></script>
 		</head>
-		<body id="top">
-			<main>
+		<body id="top" class="bg-slate-100">
+			<main class="flex h-screen justify-center items-center">
 				if navBar != nil {
 					<nav>
 						@navBar
@@ -23,7 +25,6 @@ templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, fla
 				if len(flashes) > 0 {
 					@flashMessages(flashes)
 				}
-				<h1>{ title }</h1>
 				@bodyArea
 				if footer != nil {
 					<footer>
@@ -32,7 +33,6 @@ templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, fla
 				}
 			</main>
 		</body>
-		<script src="/static/js/htmx.js"></script>
 	</html>
 }
 
@@ -40,7 +40,7 @@ templ Simple(title string, body templ.Component, flashes []models.Flash) {
 	@Base(
 		title,
 		nil,
-		navBar(),
+		nil,
 		body,
 		nil,
 		flashes,
@@ -70,17 +70,6 @@ templ flashMessages(flashes []models.Flash) {
 			</div>
 		}
 	</div>
-}
-
-templ navBar() {
-	<a href="/" class="nav-brand">Your Brand</a>
-	<button class="nav-toggle" onclick="toggleNav()">☰</button>
-	<ul id="nav-menu">
-		<li><a href="/about">About</a></li>
-		<li><a href="/projects">Projects</a></li>
-		<li><a href="/blog">Blog</a></li>
-		<li><a href="/contact">Contact</a></li>
-	</ul>
 }
 
 templ NotFound(path string) {

@@ -157,3 +157,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Generated CSS files
+web/static/css/styles.css
+

@@ -6,8 +6,21 @@
   "postStartCommand": "bash ./.devcontainer/poststart.sh",
   "initializeCommand": "mkdir -p ${localEnv:HOME}${localEnv:USERPROFILE}/.local/share/atuin",
   "features": {
-    "ghcr.io/devcontainers-extra/features/act:1": {}
+    "ghcr.io/devcontainers-extra/features/act:1": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
   },
+  "mounts": [
+    {
+      "type": "bind",
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.local/share/atuin",
+      "target": "/home/vscode/.local/share/atuin"
+    },
+    {
+      "type": "bind",
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.aws",
+      "target": "/home/vscode/.aws"
+    }
+  ],
   "customizations": {
     "vscode": {
       "extensions": [

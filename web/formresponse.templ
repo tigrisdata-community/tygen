@@ -1,0 +1,24 @@
+package web
+
+// FormResult holds the submitted values.
+type FormResult struct {
+	ID          string
+	WhatIsThere string
+	WhatLike    string
+	WhereIsIt   string
+	Style       string
+}
+
+// QuestionsResponse renders the “thank you” fragment swapped in by HTMX.
+templ QuestionsResponse(data FormResult) {
+	<div class="p-6 max-w-lg mx-auto bg-green-50 rounded-lg shadow space-y-4">
+		<h2 class="text-lg font-semibold text-green-800">
+			Thanks for your submission!
+		</h2>
+		<p><strong>ID</strong>: { data.ID }</p>
+		<p><strong>What is there?</strong><br/>{ data.WhatIsThere }</p>
+		<p><strong>What is it like?</strong><br/>{ data.WhatLike }</p>
+		<p><strong>Where is it?</strong><br/>{ data.WhereIsIt }</p>
+		<p><strong>Style selected:</strong><br/>{ data.Style }</p>
+	</div>
+}

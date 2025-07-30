@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/a-h/templ"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/rbcervilla/redisstore/v9"
 	"github.com/tigrisdata-community/tygen/models"
@@ -15,8 +19,10 @@ import (
 const sessionName = "session"
 
 type Options struct {
-	DatabaseURL string
-	RedisURL    string
+	DatabaseURL           string
+	RedisURL              string
+	S3Client              *s3.Client
+	ReferenceImagesBucket string
 }
 
 func New(opts Options) (*Server, error) {
@@ -43,29 +49,53 @@ func New(opts Options) (*Server, error) {
 	})
 
 	result := &Server{
-		dao:   dao,
-		store: store,
+		dao:                   dao,
+		store:                 store,
+		s3c:                   opts.S3Client,
+		referenceImagesBucket: opts.ReferenceImagesBucket,
 	}
 
 	return result, nil
 }
 
 type Server struct {
-	dao   *models.DAO
-	store *redisstore.RedisStore
+	dao                   *models.DAO
+	store                 *redisstore.RedisStore
+	s3c                   *s3.Client
+	referenceImagesBucket string
 }
 
 func (s *Server) register(mux *http.ServeMux) {
 	web.Mount(mux)
 	mux.HandleFunc("/{$}", s.Index)
-	mux.HandleFunc("/test/addflash/{kind}", s.AddFlash)
 	mux.HandleFunc("/", s.NotFound)
+	mux.HandleFunc("POST /submit", s.Submit)
 }
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 	flashes, _ := getFlashes(r.Context())
 
-	templ.Handler(web.Simple("Hello!", web.Index(), flashes)).ServeHTTP(w, r)
+	templ.Handler(web.Simple("Tygen", web.QuestionsForm(), flashes)).ServeHTTP(w, r)
+}
+
+func (s *Server) Submit(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		slog.Error("can't parse form", "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id := uuid.Must(uuid.NewV7()).String()
+
+	result := web.FormResult{
+		ID:          id,
+		WhatIsThere: r.FormValue("whatIsThere"),
+		WhatLike:    r.FormValue("whatLike"),
+		WhereIsIt:   r.FormValue("whereIsIt"),
+		Style:       r.FormValue("style"),
+	}
+
+	templ.Handler(web.QuestionsResponse(result)).ServeHTTP(w, r)
 }
 
 func (s *Server) AddFlash(w http.ResponseWriter, r *http.Request) {
@@ -100,4 +130,22 @@ func (s *Server) NotFound(w http.ResponseWriter, r *http.Request) {
 		web.Simple("Not found: "+r.URL.Path, web.NotFound(r.URL.Path), nil),
 		templ.WithStatus(http.StatusNotFound),
 	).ServeHTTP(w, r)
+}
+
+// GeneratePresignedURL generates a presigned URL for downloading a file from the reference images bucket
+func (s *Server) GeneratePresignedURL(ctx context.Context, key string) (string, error) {
+	presignClient := s3.NewPresignClient(s.s3c)
+
+	request, err := presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
+		Bucket: &s.referenceImagesBucket,
+		Key:    &key,
+	}, func(opts *s3.PresignOptions) {
+		opts.Expires = time.Duration(15 * time.Minute)
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("failed to presign request: %w", err)
+	}
+
+	return request.URL, nil
 }

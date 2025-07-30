@@ -1,5 +1,181 @@
 package web
 
+// ImageCarousel renders a Swiper‐powered carousel.
+// Pass as many image URLs as you like.
+templ ImageCarousel(images ...string) {
+	// — include Swiper’s CSS & JS —
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css"
+	/>
+	<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js" defer></script>
+	// — carousel markup —
+	<div class="w-full">
+		<div class="swiper-container mySwiper relative">
+			<div class="swiper-wrapper">
+				for _, src := range images {
+					<div class="swiper-slide">
+						<a href={ src } target="_blank">
+							<img
+								src={ src }
+								alt=""
+								class="w-full h-96 object-cover rounded-lg"
+							/>
+						</a>
+					</div>
+				}
+			</div>
+			<div class="swiper-button-prev"></div>
+			<div class="swiper-button-next"></div>
+			<div class="swiper-pagination"></div>
+			<style>
+				.swiper-container {
+					overflow: hidden;
+				}
+				.swiper-slide {
+					display: inline-block;
+				}
+				#form-container {
+					position: relative;
+					z-index: 10;
+					background: white;
+				}
+				.swiper-button-prev,
+				.swiper-button-next,
+				.swiper-pagination {
+					display: none;
+				}
+				.swiper-slide img {
+					width: 100%;
+					height: auto;
+					aspect-ratio: 16 / 9;
+					object-fit: cover;
+				}
+				.swiper-container {
+					width: 100%;
+				}
+			</style>
+		</div>
+	</div>
+	// — initialize Swiper after the DOM is ready —
+	<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Randomize slide order
+      const swiperWrapper = document.querySelector('.swiper-wrapper');
+      const slides = Array.from(swiperWrapper.children);
+      for (let i = slides.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [slides[i], slides[j]] = [slides[j], slides[i]];
+      }
+      slides.forEach(slide => swiperWrapper.appendChild(slide));
+
+      new Swiper('.mySwiper', {
+        loop: true,
+        autoplay: prefersReducedMotion ? false : { delay: 5000, disableOnInteraction: false },
+        navigation: {
+          prevEl: '.swiper-button-prev',
+          nextEl: '.swiper-button-next',
+        },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        slidesPerView: 1,
+        spaceBetween: 0,
+      });
+    });
+  </script>
+}
+
+// QuestionsForm renders the HTMX‑backed form.
+templ QuestionsForm() {
+	<div id="form-container" class="max-w-lg mx-auto p-6 bg-white rounded-lg shadow space-y-6">
+		<form
+			hx-post="/submit"
+			hx-target="#form-container"
+			hx-swap="innerHTML"
+		>
+			<div class="mb-4">
+				<h1 class="mb-[0.1rem] font-serif text-3xl text-center">Tygen</h1>
+			</div>
+			@ImageCarousel(
+				"/static/img/carousel/data-surfing-kanagawa.webp",
+				"/static/img/carousel/directly-to-you.webp",
+				"/static/img/carousel/ducklake-serenade.webp",
+				"/static/img/carousel/gotta-go-fast.webp",
+				"/static/img/carousel/nat-ty-sharing.webp",
+				"/static/img/carousel/office-datasets.webp",
+				"/static/img/carousel/pickleball.webp",
+				"/static/img/carousel/the-future-if.webp",
+				"/static/img/carousel/xiyatu.webp",
+			)
+			<div>
+				<label for="whatIsThere" class="block text-sm font-medium mb-1">
+					What is there?
+				</label>
+				<textarea
+					id="whatIsThere"
+					name="whatIsThere"
+					placeholder="Ty is playing pickleball"
+					required
+					class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+				></textarea>
+			</div>
+			<div>
+				<label for="whatLike" class="block text-sm font-medium mb-1">
+					What is it like?
+				</label>
+				<textarea
+					id="whatLike"
+					name="whatLike"
+					placeholder="It is peaceful, serene, and natural"
+					required
+					class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+				></textarea>
+			</div>
+			<div>
+				<label for="whereIsIt" class="block text-sm font-medium mb-1">
+					Where is it?
+				</label>
+				<textarea
+					id="whereIsIt"
+					name="whereIsIt"
+					placeholder="Hyrule Field, there is a Sheikah Tower in the distance"
+					required
+					class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+				></textarea>
+			</div>
+			<div>
+				<p class="block text-sm font-medium mb-1">What style?</p>
+				<div class="flex flex-wrap gap-4">
+					for _, s := range []string{"Cartoon", "Anime", "Watercolour", "Coloured Pencil"} {
+						<label class="inline-flex items-center">
+							<input
+								type="radio"
+								name="style"
+								value={ s }
+								required
+								class="form-radio h-4 w-4 text-blue-600"
+							/>
+							<span class="ml-2">{ s }</span>
+						</label>
+					}
+				</div>
+			</div>
+			<div class="flex justify-center">
+				<button
+					type="submit"
+					class="px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
+				>
+					Submit
+				</button>
+			</div>
+		</form>
+	</div>
+}
+
 templ Index() {
-	<p>Hello, world!</p>
+	<div class="max-w-lg mx-auto">
+		<p>Hello, world!</p>
+	</div>
+	@QuestionsForm()
 }
