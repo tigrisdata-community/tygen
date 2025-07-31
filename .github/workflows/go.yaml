@@ -64,5 +64,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-golang-
 
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            nc -z postgres 5432 && echo "Postgres is up" && exit 0
+            echo "Waiting for postgres..."
+            sleep 1
+          done
+          echo "Postgres did not start in time" >&2
+          exit 1
+
       - name: Test
         run: npm run test
