@@ -8,6 +8,7 @@ templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, fla
 		<head>
 			<title>{ title }</title>
 			<link rel="stylesheet" href="/static/css/styles.css"/>
+			<link rel="stylesheet" href="/static/css/spinner.css"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			if headArea != nil {
 				@headArea
@@ -75,4 +76,13 @@ templ flashMessages(flashes []models.Flash) {
 templ NotFound(path string) {
 	<p>404: <code>{ path }</code></p>
 	<p>Sorry but the number you have reached is either not available or out of service. If you are reaching this message in error, please hang up and try your call again.</p>
+}
+
+templ Error(message string) {
+	<div class="p-6 max-w-lg mx-auto bg-red-50 rounded-lg shadow space-y-4">
+		<h2 class="text-lg font-semibold text-red-800">
+			Oops!
+		</h2>
+		<p>{ message }</p>
+	</div>
 }

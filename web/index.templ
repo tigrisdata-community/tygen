@@ -108,7 +108,7 @@ templ QuestionsForm() {
 				"/static/img/carousel/the-future-if.webp",
 				"/static/img/carousel/xiyatu.webp",
 			)
-			<div>
+			<div class="my-2">
 				<label for="whatIsThere" class="block text-sm font-medium mb-1">
 					What is there?
 				</label>
@@ -120,7 +120,7 @@ templ QuestionsForm() {
 					class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
 				></textarea>
 			</div>
-			<div>
+			<div class="my-2">
 				<label for="whatLike" class="block text-sm font-medium mb-1">
 					What is it like?
 				</label>
@@ -144,7 +144,7 @@ templ QuestionsForm() {
 					class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
 				></textarea>
 			</div>
-			<div>
+			<div class="my-2">
 				<p class="block text-sm font-medium mb-1">What style?</p>
 				<div class="flex flex-wrap gap-4">
 					for _, s := range []string{"Cartoon", "Anime", "Watercolour", "Coloured Pencil"} {
@@ -164,7 +164,7 @@ templ QuestionsForm() {
 			<div class="flex justify-center">
 				<button
 					type="submit"
-					class="px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
+					class="mt-2 px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
 				>
 					Submit
 				</button>

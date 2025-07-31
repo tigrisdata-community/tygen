@@ -117,7 +117,7 @@ func QuestionsForm() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div><label for=\"whatIsThere\" class=\"block text-sm font-medium mb-1\">What is there?</label> <textarea id=\"whatIsThere\" name=\"whatIsThere\" placeholder=\"Ty is playing pickleball\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><label for=\"whatLike\" class=\"block text-sm font-medium mb-1\">What is it like?</label> <textarea id=\"whatLike\" name=\"whatLike\" placeholder=\"It is peaceful, serene, and natural\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><label for=\"whereIsIt\" class=\"block text-sm font-medium mb-1\">Where is it?</label> <textarea id=\"whereIsIt\" name=\"whereIsIt\" placeholder=\"Hyrule Field, there is a Sheikah Tower in the distance\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><p class=\"block text-sm font-medium mb-1\">What style?</p><div class=\"flex flex-wrap gap-4\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"my-2\"><label for=\"whatIsThere\" class=\"block text-sm font-medium mb-1\">What is there?</label> <textarea id=\"whatIsThere\" name=\"whatIsThere\" placeholder=\"Ty is playing pickleball\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div class=\"my-2\"><label for=\"whatLike\" class=\"block text-sm font-medium mb-1\">What is it like?</label> <textarea id=\"whatLike\" name=\"whatLike\" placeholder=\"It is peaceful, serene, and natural\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div><label for=\"whereIsIt\" class=\"block text-sm font-medium mb-1\">Where is it?</label> <textarea id=\"whereIsIt\" name=\"whereIsIt\" placeholder=\"Hyrule Field, there is a Sheikah Tower in the distance\" required class=\"w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400\"></textarea></div><div class=\"my-2\"><p class=\"block text-sm font-medium mb-1\">What style?</p><div class=\"flex flex-wrap gap-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -153,7 +153,7 @@ func QuestionsForm() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div><div class=\"flex justify-center\"><button type=\"submit\" class=\"px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition\">Submit</button></div></form></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div><div class=\"flex justify-center\"><button type=\"submit\" class=\"mt-2 px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition\">Submit</button></div></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

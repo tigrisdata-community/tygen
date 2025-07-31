@@ -13,7 +13,7 @@ import (
 
 var (
 	//go:embed static
-	static embed.FS
+	Static embed.FS
 )
 
 // isCompressible returns true if the content type should be compressed
@@ -46,7 +46,7 @@ func selectiveGzipHandler(next http.Handler) http.Handler {
 }
 
 func Mount(mux *http.ServeMux) {
-	var h http.Handler = http.FileServerFS(static)
+	var h http.Handler = http.FileServerFS(Static)
 	h = internal.UnchangingCache(h)
 	h = selectiveGzipHandler(h)
 

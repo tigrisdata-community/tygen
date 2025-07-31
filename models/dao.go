@@ -19,6 +19,10 @@ func (d *DAO) DB() *gorm.DB {
 	return d.db
 }
 
+func (d *DAO) Images() *ImageDAO {
+	return NewImageDAO(d.db)
+}
+
 func New(dbURL string, rdb *valkey.Client) (*DAO, error) {
 	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
 		Logger: slogGorm.New(
@@ -62,7 +66,7 @@ func New(dbURL string, rdb *valkey.Client) (*DAO, error) {
 	}()
 
 	// Now run migration safely
-	err = db.AutoMigrate(&Example{})
+	err = db.AutoMigrate(&Image{})
 	if err != nil {
 		return nil, fmt.Errorf("can't run migrations: %w", err)
 	}

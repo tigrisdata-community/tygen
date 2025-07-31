@@ -1,24 +1,66 @@
 package web
 
-// FormResult holds the submitted values.
-type FormResult struct {
-	ID          string
-	WhatIsThere string
-	WhatLike    string
-	WhereIsIt   string
-	Style       string
-}
+import (
+	"fmt"
+	"time"
+
+	"github.com/tigrisdata-community/tygen/models"
+)
 
 // QuestionsResponse renders the “thank you” fragment swapped in by HTMX.
-templ QuestionsResponse(data FormResult) {
-	<div class="p-6 max-w-lg mx-auto bg-green-50 rounded-lg shadow space-y-4">
-		<h2 class="text-lg font-semibold text-green-800">
-			Thanks for your submission!
-		</h2>
-		<p><strong>ID</strong>: { data.ID }</p>
-		<p><strong>What is there?</strong><br/>{ data.WhatIsThere }</p>
-		<p><strong>What is it like?</strong><br/>{ data.WhatLike }</p>
-		<p><strong>Where is it?</strong><br/>{ data.WhereIsIt }</p>
-		<p><strong>Style selected:</strong><br/>{ data.Style }</p>
+templ QuestionsResponse(data models.Image) {
+	<div id="parent" hx-ext="ws" ws-connect={ fmt.Sprintf("/imagegen/%s/status", data.UUID) }>
+		<div id="thanks" class="p-6 max-w-lg mx-auto bg-green-50 rounded-lg shadow space-y-4">
+			<h2 class="text-lg font-semibold text-green-800">
+				Thanks for your submission!
+			</h2>
+			<p><strong>ID</strong>: { data.UUID }</p>
+			<p><strong>What is there?</strong><br/>{ data.WhatIsThere }</p>
+			<p><strong>What is it like?</strong><br/>{ data.WhatIsItLike }</p>
+			<p><strong>Where is it?</strong><br/>{ data.WhereIsIt }</p>
+			<p><strong>Style selected:</strong><br/>{ data.Style }</p>
+			<br/>
+		</div>
+		<div class="p-6 pt-3 max-w-lg mx-auto">
+			<h2 id="status" class="text-center">Connecting to the server</h2>
+			<p id="updated">This may take a few minutes!</p>
+			<div id="spinner" class="lds-roller mx-auto p-4"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+			<div id="img-container"></div>
+		</div>
 	</div>
+}
+
+type StreamingChunk struct {
+	Done     bool
+	ImageURL string
+	Error    string
+	Status   string
+	Updated  *time.Time
+}
+
+templ StreamingResponseChunk(data StreamingChunk) {
+	if data.Done {
+		<div id="parent">
+			<img src={ data.ImageURL }/>
+		</div>
+	}
+	if data.ImageURL != "" {
+		<img src={ data.ImageURL }/>
+	}
+	if data.Error != "" {
+		<div id="parent">
+			<div class="p-6 max-w-lg mx-auto bg-red-50 rounded-lg shadow space-y-4">
+				<h2 class="text-lg font-semibold text-red-800">
+					Oops!
+				</h2>
+				<p>{ data.Error }</p>
+			</div>
+		</div>
+	}
+	if data.Status != "" {
+		<h2 id="status" class="font-serif text-lg text-center">{ data.Status }</h2>
+	}
+	if data.Updated != nil {
+		<p id="updated">Last updated: { data.Updated.Format(time.RFC3339) }</p>
+	}
 }

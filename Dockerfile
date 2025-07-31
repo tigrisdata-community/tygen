@@ -4,11 +4,20 @@ FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS
 
 WORKDIR /app
 
+RUN apk -U add nodejs npm
+
 COPY go.mod go.sum ./
 RUN \
   --mount=type=cache,target=/root/.cache \
   --mount=type=cache,target=/root/go \
   go mod download
+
+COPY package.json package-lock.json ./
+RUN \
+  --mount=type=cache,target=/root/.cache \
+  --mount=type=cache,target=/root/go \
+  --mount=type=cache,target=/app/node_modules \
+  npm ci
 
 COPY . .
 
@@ -18,6 +27,13 @@ ARG TARGETARCH
 RUN \
   --mount=type=cache,target=/root/.cache \
   --mount=type=cache,target=/root/go \
+  --mount=type=cache,target=/app/node_modules \
+  npm run generate
+
+RUN \
+  --mount=type=cache,target=/root/.cache \
+  --mount=type=cache,target=/root/go \
+  --mount=type=cache,target=/app/node_modules \
   GOOS=${TARGETOS} \
   GOARCH=${TARGETARCH} \
   CGO_ENABLED=0 \
