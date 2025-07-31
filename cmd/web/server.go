@@ -17,12 +17,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/openai/openai-go"
-	"github.com/rbcervilla/redisstore/v9"
 	"github.com/tigrisdata-community/tygen/models"
 	"github.com/tigrisdata-community/tygen/web"
 )
-
-const sessionName = "session"
 
 var upgrader = websocket.Upgrader{}
 
@@ -54,7 +51,6 @@ func New(opts Options) (*Server, error) {
 
 type Server struct {
 	dao                   *models.DAO
-	store                 *redisstore.RedisStore
 	s3c                   *s3.Client
 	oai                   *openai.Client
 	referenceImagesBucket string
