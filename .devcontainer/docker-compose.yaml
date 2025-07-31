@@ -14,14 +14,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  valkey:
-    image: valkey/valkey:8
-    pull_policy: always
-    environment:
-      VALKEY_EXTRA_FLAGS: "--save 60 1 --loglevel warning"
-    volumes:
-      - valkey-data:/data
-
   # VS Code workspace service
   workspace:
     image: ghcr.io/xe/project-template/devcontainer:latest
@@ -35,7 +27,6 @@ services:
     environment:
       <<: *postgres-env
       DATABASE_URL: postgresql://admin:hunter2@postgres/project?sslmode=disable
-      REDIS_URL: redis://valkey:6379/0
 
 volumes:
   postgres-data:

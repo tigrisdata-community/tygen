@@ -160,3 +160,4 @@ dist
 # Generated CSS files
 web/static/css/styles.css
 
+.DS_Store

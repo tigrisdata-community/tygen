@@ -1,8 +1,6 @@
 package web
 
-import "github.com/tigrisdata-community/tygen/models"
-
-templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, flashes []models.Flash) {
+templ Base(title string, headArea, navBar, bodyArea, footer templ.Component) {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -23,9 +21,6 @@ templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, fla
 						@navBar
 					</nav>
 				}
-				if len(flashes) > 0 {
-					@flashMessages(flashes)
-				}
 				@bodyArea
 				if footer != nil {
 					<footer>
@@ -37,45 +32,23 @@ templ Base(title string, headArea, navBar, bodyArea, footer templ.Component, fla
 	</html>
 }
 
-templ Simple(title string, body templ.Component, flashes []models.Flash) {
+templ Simple(title string, body templ.Component) {
 	@Base(
 		title,
 		nil,
 		nil,
 		body,
 		nil,
-		flashes,
 	)
 }
 
-templ flashMessages(flashes []models.Flash) {
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-  	  // Auto-dismiss flash messages after 5 seconds
-    	const flashes = document.querySelectorAll('.flash');
-	  	flashes.forEach(flash => {
-  	    setTimeout(() => {
-    	    flash.style.opacity = '0';
-      	  setTimeout(() => flash.remove(), 300);
-	      }, 5000);
-  	  });
-		});
-	</script>
-	<div class="flash-container">
-		for _, flash := range flashes {
-			<div class={ "flash", "flash-" + flash.Kind }>
-				<span class="flash-message">
-					@templ.Raw(flash.Body)
-				</span>
-				<button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
-			</div>
-		}
-	</div>
-}
-
 templ NotFound(path string) {
-	<p>404: <code>{ path }</code></p>
-	<p>Sorry but the number you have reached is either not available or out of service. If you are reaching this message in error, please hang up and try your call again.</p>
+	<div class="p-6 max-w-lg mx-auto bg-red-50 rounded-lg shadow space-y-4">
+		<h2 class="text-lg font-semibold text-red-800">
+			404: Not Found
+		</h2>
+		<p>Sorry but the number you have reached (<code>{ path }</code>) is either not available or out of service. If you are reaching this message in error, please hang up and try your call again.</p>
+	</div>
 }
 
 templ Error(message string) {

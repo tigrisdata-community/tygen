@@ -61,38 +61,3 @@ func MaybeSpawnDB(t *testing.T) string {
 
 	return dbURL
 }
-
-func MaybeSpawnValkey(t *testing.T) string {
-	redisURL := os.Getenv("REDIS_URL")
-
-	if redisURL == "" {
-		if os.Getenv("DONT_USE_NETWORK") != "" {
-			t.Skip("test requires network egress")
-			return ""
-		}
-
-		testcontainers.SkipIfProviderIsNotHealthy(t)
-
-		req := testcontainers.ContainerRequest{
-			Image:      "valkey/valkey:8",
-			WaitingFor: wait.ForLog("Ready to accept connections"),
-		}
-		valkeyC, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
-			ContainerRequest: req,
-			Started:          true,
-		})
-		testcontainers.CleanupContainer(t, valkeyC)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		containerIP, err := valkeyC.ContainerIP(t.Context())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		return fmt.Sprintf("redis://%s:6379/0", containerIP)
-	}
-
-	return redisURL
-}

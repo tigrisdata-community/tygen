@@ -17,7 +17,6 @@ import (
 var (
 	bind                  = flag.String("bind", ":4000", "TCP host:port to bind on")
 	databaseURL           = flag.String("database-url", "", "Postgres database URL")
-	redisURL              = flag.String("redis-url", "", "Valkey/Redis database URL")
 	slogLevel             = flag.String("slog-level", "INFO", "log level")
 	referenceImagesBucket = flag.String("reference-images-bucket", "xe-ty-reference-images", "Bucket full of reference images")
 	tigrisBucket          = flag.String("tigris-bucket", "xe-tygen-dev", "Tigris bucket to push generated images to")
@@ -43,7 +42,6 @@ func main() {
 
 	s, err := New(Options{
 		DatabaseURL:           *databaseURL,
-		RedisURL:              *redisURL,
 		S3Client:              s3c,
 		ReferenceImagesBucket: *referenceImagesBucket,
 		TigrisBucket:          *tigrisBucket,
@@ -56,7 +54,6 @@ func main() {
 	s.register(mux)
 
 	var h http.Handler = mux
-	h = s.sessionMiddleware(h)
 
 	slog.Info("now listening", "url", "http://localhost"+*bind)
 	log.Fatal(http.ListenAndServe(*bind, h))

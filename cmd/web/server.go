@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 	"github.com/openai/openai-go"
 	"github.com/rbcervilla/redisstore/v9"
@@ -29,40 +28,21 @@ var upgrader = websocket.Upgrader{}
 
 type Options struct {
 	DatabaseURL           string
-	RedisURL              string
 	S3Client              *s3.Client
 	ReferenceImagesBucket string
 	TigrisBucket          string
 }
 
 func New(opts Options) (*Server, error) {
-	rdb, err := models.ConnectValkey(opts.RedisURL)
-	if err != nil {
-		return nil, fmt.Errorf("can't connect to valkey: %w", err)
-	}
-
-	dao, err := models.New(opts.DatabaseURL, rdb)
+	dao, err := models.New(opts.DatabaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("can't create DAO: %w", err)
 	}
 
-	store, err := redisstore.NewRedisStore(context.Background(), rdb)
-	if err != nil {
-		return nil, fmt.Errorf("can't create redis store: %w", err)
-	}
-
 	oai := openai.NewClient()
-
-	store.KeyPrefix("session:")
-	store.Options(sessions.Options{
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   86400 * 60,
-	})
 
 	result := &Server{
 		dao:                   dao,
-		store:                 store,
 		s3c:                   opts.S3Client,
 		oai:                   &oai,
 		referenceImagesBucket: opts.ReferenceImagesBucket,
@@ -91,14 +71,11 @@ func (s *Server) register(mux *http.ServeMux) {
 }
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
-	flashes, _ := getFlashes(r.Context())
-
-	templ.Handler(web.Simple("Tygen", web.QuestionsForm(), flashes)).ServeHTTP(w, r)
+	templ.Handler(web.Simple("Tygen", web.QuestionsForm())).ServeHTTP(w, r)
 }
 
 func (s *Server) ImagePage(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	flashes, _ := getFlashes(r.Context())
 
 	image, err := s.dao.Images().GetByUUID(id)
 	if err != nil {
@@ -114,7 +91,7 @@ func (s *Server) ImagePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templ.Handler(web.Simple("Image", web.ImagePage(image, imageURL), flashes)).ServeHTTP(w, r)
+	templ.Handler(web.Simple("Image", web.ImagePage(image, imageURL))).ServeHTTP(w, r)
 }
 
 func (s *Server) execTemplate(ctx context.Context, conn *websocket.Conn, comp templ.Component) error {
@@ -309,7 +286,7 @@ func (s *Server) Submit(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) NotFound(w http.ResponseWriter, r *http.Request) {
 	templ.Handler(
-		web.Simple("Not found: "+r.URL.Path, web.NotFound(r.URL.Path), nil),
+		web.Simple("Not found: "+r.URL.Path, web.NotFound(r.URL.Path)),
 		templ.WithStatus(http.StatusNotFound),
 	).ServeHTTP(w, r)
 }

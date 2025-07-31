@@ -12,11 +12,9 @@ func makeServer(t *testing.T) (*Server, *httptest.Server) {
 	t.Helper()
 
 	dbURL := modelstest.MaybeSpawnDB(t)
-	redisURL := modelstest.MaybeSpawnValkey(t)
 
 	s, err := New(Options{
 		DatabaseURL: dbURL,
-		RedisURL:    redisURL,
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	slogGorm "github.com/orandin/slog-gorm"
-	valkey "github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -23,7 +22,7 @@ func (d *DAO) Images() *ImageDAO {
 	return NewImageDAO(d.db)
 }
 
-func New(dbURL string, rdb *valkey.Client) (*DAO, error) {
+func New(dbURL string) (*DAO, error) {
 	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
 		Logger: slogGorm.New(
 			slogGorm.WithErrorField("err"),
