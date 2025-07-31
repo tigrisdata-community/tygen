@@ -9,7 +9,7 @@ import (
 
 // QuestionsResponse renders the “thank you” fragment swapped in by HTMX.
 templ QuestionsResponse(data models.Image) {
-	<div id="parent" hx-ext="ws" ws-connect={ fmt.Sprintf("/imagegen/%s/status", data.UUID) }>
+	<div id="parent" hx-ext="ws" ws-connect={ fmt.Sprintf("/image/%s/status", data.UUID) }>
 		<div id="thanks" class="p-6 max-w-lg mx-auto bg-green-50 rounded-lg shadow space-y-4">
 			<h2 class="text-lg font-semibold text-green-800">
 				Thanks for your submission!
@@ -31,6 +31,7 @@ templ QuestionsResponse(data models.Image) {
 }
 
 type StreamingChunk struct {
+	ID       string
 	Done     bool
 	ImageURL string
 	Error    string
@@ -41,11 +42,13 @@ type StreamingChunk struct {
 templ StreamingResponseChunk(data StreamingChunk) {
 	if data.Done {
 		<div id="parent">
-			<img src={ data.ImageURL }/>
+			<meta http-equiv="refresh" content={ fmt.Sprintf("0; url=/image/%s", data.ID) }/>
 		</div>
 	}
 	if data.ImageURL != "" {
-		<img src={ data.ImageURL }/>
+		<div id="img-container">
+			<img src={ data.ImageURL }/>
+		</div>
 	}
 	if data.Error != "" {
 		<div id="parent">

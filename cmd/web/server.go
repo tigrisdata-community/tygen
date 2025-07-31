@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -85,13 +86,35 @@ func (s *Server) register(mux *http.ServeMux) {
 	mux.HandleFunc("/{$}", s.Index)
 	mux.HandleFunc("/", s.NotFound)
 	mux.HandleFunc("POST /submit", s.Submit)
-	mux.HandleFunc("GET /imagegen/{id}/status", s.ImagegenStatus)
+	mux.HandleFunc("GET /image/{id}/status", s.ImagegenStatus)
+	mux.HandleFunc("GET /image/{id}", s.ImagePage)
 }
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 	flashes, _ := getFlashes(r.Context())
 
 	templ.Handler(web.Simple("Tygen", web.QuestionsForm(), flashes)).ServeHTTP(w, r)
+}
+
+func (s *Server) ImagePage(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	flashes, _ := getFlashes(r.Context())
+
+	image, err := s.dao.Images().GetByUUID(id)
+	if err != nil {
+		slog.Error("can't find image", "id", id, "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	imageURL, err := s.GeneratePresignedURL(r.Context(), s.tigrisBucket, fmt.Sprintf("var/%s.webp", image.UUID))
+	if err != nil {
+		slog.Error("can't generate image presigned URL", "id", id, "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	templ.Handler(web.Simple("Image", web.ImagePage(image, imageURL), flashes)).ServeHTTP(w, r)
 }
 
 func (s *Server) execTemplate(ctx context.Context, conn *websocket.Conn, comp templ.Component) error {
@@ -101,7 +124,7 @@ func (s *Server) execTemplate(ctx context.Context, conn *websocket.Conn, comp te
 	return conn.WriteMessage(websocket.TextMessage, buf.Bytes())
 }
 
-func (s *Server) writeImage(fname, b64Body string) error {
+func (s *Server) writeImage(ctx context.Context, fname, b64Body string) error {
 	fout, err := os.Create(fname)
 	if err != nil {
 		return err
@@ -116,6 +139,16 @@ func (s *Server) writeImage(fname, b64Body string) error {
 	fout.Write(imageBytes)
 	fout.Close()
 
+	if _, err := s.s3c.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:        aws.String(s.tigrisBucket),
+		Key:           aws.String(fname),
+		Body:          bytes.NewBuffer(imageBytes),
+		ContentLength: aws.Int64(int64(len(imageBytes))),
+		ContentType:   aws.String("image/webp"),
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -124,10 +157,12 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 
 	image, err := s.dao.Images().GetByUUID(id)
 	if err != nil {
-		slog.Error("can't find image", "err", err)
+		slog.Error("can't find image", "id", id, "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	lg := slog.With("image", image.ID, "style", image.Style)
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -136,7 +171,7 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	tyRef, err := web.Static.ReadFile("static/img/greet.png")
+	tyRef, err := web.Static.ReadFile("static/img/ref/ty.png")
 	if err != nil {
 		slog.Error("can't open image for ty", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -150,15 +185,18 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 
 	prompt := fmt.Sprintf("Attached is a reference image of the cartoon tiger Ty. Draw Ty in the following scenario:\n\nWhat is there?\n%s\n\nWhat is it like?\n%s\n\nWhat else is there?\n%s\n\nUse a %s style.", image.WhatIsThere, image.WhatIsItLike, image.WhereIsIt, image.Style)
 
-	slog.Info("making image")
+	lg.Info("making image")
 
 	stream := s.oai.Images.EditStreaming(r.Context(), openai.ImageEditParams{
 		Image: openai.ImageEditParamsImageUnion{
-			OfFile: openai.File(bytes.NewReader(tyRef), "ty-happy.png", "image/png"),
+			OfFileArray: []io.Reader{
+				openai.File(bytes.NewReader(tyRef), "ty-happy.png", "image/png"),
+			},
 		},
 		Prompt:        prompt,
 		Model:         openai.ImageModelGPTImage1,
 		N:             openai.Int(1),
+		PartialImages: openai.Int(3),
 		User:          openai.String(r.UserAgent()),
 		InputFidelity: openai.ImageEditParamsInputFidelityHigh,
 		OutputFormat:  openai.ImageEditParamsOutputFormatWebP,
@@ -166,11 +204,11 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 		Size:          openai.ImageEditParamsSize1536x1024,
 	})
 
-	t := time.NewTicker(15 * time.Second)
+	t := time.NewTicker(5 * time.Second)
 
 	go func() {
 		for t := range t.C {
-			slog.Info("sending update", "image", image.UUID)
+			lg.Info("sending update")
 			s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
 				Updated: &t,
 			}))
@@ -179,42 +217,43 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 
 	for stream.Next() {
 		ev := stream.Current()
-		slog.Info("got event", "type", fmt.Sprintf("%T", ev.AsAny()))
+		lg.Info("got event", "type", fmt.Sprintf("%T", ev.AsAny()))
 
 		switch variant := ev.AsAny().(type) {
 		case openai.ImageEditPartialImageEvent:
-			slog.Info("got partial event", "id", image.UUID, "index", variant.PartialImageIndex)
+			lg.Info("got partial event", "id", image.UUID, "index", variant.PartialImageIndex)
+			key := fmt.Sprintf("var/%s_%d.webp", image.UUID, variant.PartialImageIndex)
 
+			if err := s.writeImage(r.Context(), key, variant.B64JSON); err != nil {
+				lg.Error("can't decode output file bytes", "err", err)
+				s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
+					Error: err.Error(),
+				}))
+				return
+			}
+
+			imageURL, err := s.GeneratePresignedURL(r.Context(), s.tigrisBucket, key)
+			if err != nil {
+				lg.Error("can't generate presigned URL", "err", err)
+				s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
+					Error: err.Error(),
+				}))
+				return
+			}
+
+			now := time.Now()
 			s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
-				Status: fmt.Sprintf("Partial image %d", variant.PartialImageIndex+1),
+				Status:   fmt.Sprintf("Partial image %d", variant.PartialImageIndex+1),
+				ImageURL: imageURL,
+				Updated:  &now,
 			}))
 
-			fout, err := os.Create(fmt.Sprintf("./var/%s_%d.webp", image.UUID, variant.PartialImageIndex))
-			if err != nil {
-				slog.Error("can't create output file", "err", err)
-				s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
-					Error: err.Error(),
-				}))
-				return
-			}
-
-			imageBytes, err := base64.StdEncoding.DecodeString(variant.B64JSON)
-			if err != nil {
-				slog.Error("can't decode output file bytes", "err", err)
-				s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
-					Error: err.Error(),
-				}))
-				return
-			}
-
-			fout.Write(imageBytes)
-			fout.Close()
 		case openai.ImageEditCompletedEvent:
 			t.Stop()
-			slog.Info("image done", "id", image.UUID)
+			lg.Info("image done", "id", image.UUID)
 
-			if err := s.writeImage(fmt.Sprintf("./var/%s.webp", image.UUID), variant.B64JSON); err != nil {
-				slog.Error("can't decode output file bytes", "err", err)
+			if err := s.writeImage(r.Context(), fmt.Sprintf("var/%s.webp", image.UUID), variant.B64JSON); err != nil {
+				lg.Error("can't decode output file bytes", "err", err)
 				s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
 					Error: err.Error(),
 				}))
@@ -226,36 +265,20 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 			s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
 				Status: "Done!",
 				Done:   true,
+				ID:     image.UUID,
 			}))
 		default:
-			slog.Error("got unknown event type", "type", fmt.Sprintf("%T", ev.AsAny()), "data", ev)
+			lg.Error("got unknown event type", "type", fmt.Sprintf("%T", ev.AsAny()), "data", ev)
 		}
 	}
 
 	if err := stream.Err(); err != nil {
-		slog.Error("can't read from stream", "err", err)
+		lg.Error("can't read from stream", "err", err)
 		s.execTemplate(r.Context(), conn, web.StreamingResponseChunk(web.StreamingChunk{
 			Error: err.Error(),
 		}))
 		return
 	}
-
-	// for i, data := range image.Data {
-	// 	fout, err := os.Create(fmt.Sprintf("./var/%s_%d.webp", result.ID, i))
-	// 	if err != nil {
-	// 		slog.Error("can't open output image file for ty", "err", err)
-	// 		http.Error(w, err.Error(), http.StatusBadRequest)
-	// 		return
-	// 	}
-	// 	imageBytes, err := base64.StdEncoding.DecodeString(data.B64JSON)
-	// 	if err != nil {
-	// 		slog.Error("can't decode images for ty", "err", err)
-	// 		http.Error(w, err.Error(), http.StatusBadRequest)
-	// 		return
-	// 	}
-	// 	fout.Write(imageBytes)
-	// 	result.ImageURLs = append(result.ImageURLs, "data:image/webp;base64,"+base64.RawURLEncoding.EncodeToString(imageBytes))
-	// }
 }
 
 func (s *Server) Submit(w http.ResponseWriter, r *http.Request) {

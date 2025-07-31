@@ -20,7 +20,7 @@ var (
 	redisURL              = flag.String("redis-url", "", "Valkey/Redis database URL")
 	slogLevel             = flag.String("slog-level", "INFO", "log level")
 	referenceImagesBucket = flag.String("reference-images-bucket", "xe-ty-reference-images", "Bucket full of reference images")
-	tigrisBucket          = flag.String("tigris-bucket", "xe-tygen", "Tigris bucket to push generated images to")
+	tigrisBucket          = flag.String("tigris-bucket", "xe-tygen-dev", "Tigris bucket to push generated images to")
 )
 
 func main() {
@@ -46,6 +46,7 @@ func main() {
 		RedisURL:              *redisURL,
 		S3Client:              s3c,
 		ReferenceImagesBucket: *referenceImagesBucket,
+		TigrisBucket:          *tigrisBucket,
 	})
 	if err != nil {
 		log.Fatal(err)
