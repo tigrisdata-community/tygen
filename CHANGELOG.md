@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/tigrisdata-community/tygen/compare/v1.0.0...v1.0.1) (2025-07-31)
+
+### Bug Fixes
+
+- force new version to be minted ([7815152](https://github.com/tigrisdata-community/tygen/commit/7815152fefbef267df574248fc01290e83c83aa8))
+
 # 1.0.0 (2025-07-31)
 
 ### Features
