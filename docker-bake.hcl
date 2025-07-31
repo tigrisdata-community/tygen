@@ -21,7 +21,7 @@ target "web" {
   ]
   pull = true
   tags = [
-    "ghcr.io/tigrisdata-community/tygen",
+    "ghcr.io/tigrisdata-community/tygen:main",
     "ghcr.io/tigrisdata-community/tygen:${GITHUB_SHA}"
   ]
 }
