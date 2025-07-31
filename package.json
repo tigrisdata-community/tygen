@@ -1,6 +1,6 @@
 {
   "name": "@tigrisdata-community/tygen",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Rigging to generate images with Ty!",
   "main": "index.js",
   "scripts": {
