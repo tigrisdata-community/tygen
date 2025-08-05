@@ -45,7 +45,8 @@
         "docker.docker",
         "fredwangwang.vscode-hcl-format",
         "EditorConfig.EditorConfig",
-        "otovo-oss.htmx-tags"
+        "otovo-oss.htmx-tags",
+        "tamasfe.even-better-toml"
       ]
     }
   }

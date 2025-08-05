@@ -45,7 +45,8 @@ RUN \
 FROM alpine:${ALPINE_VERSION} AS run
 WORKDIR /app
 
-RUN apk -U add ca-certificates mailcap
+RUN apk -U add ca-certificates mailcap \
+  && mkdir -p /app/var
 
 COPY --from=build /app/bin/web /app/bin/web
 
