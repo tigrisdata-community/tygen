@@ -4,7 +4,7 @@
   "service": "workspace",
   "workspaceFolder": "/workspace/tygen",
   "postStartCommand": "bash ./.devcontainer/poststart.sh",
-  "initializeCommand": "mkdir -p ${localEnv:HOME}${localEnv:USERPROFILE}/.local/share/atuin",
+  "initializeCommand": "mkdir -p ${localEnv:HOME}${localEnv:USERPROFILE}/.local/share/atuin && mkdir -p ${localEnv:HOME}${localEnv:USERPROFILE}/.aws && mkdir -p ${localEnv:HOME}${localEnv:USERPROFILE}/.fly",
   "features": {
     "ghcr.io/devcontainers-extra/features/act:1": {},
     "ghcr.io/devcontainers/features/aws-cli:1": {}
@@ -19,6 +19,11 @@
       "type": "bind",
       "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.aws",
       "target": "/home/vscode/.aws"
+    },
+    {
+      "type": "bind",
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.fly",
+      "target": "/home/vscode/.fly"
     }
   ],
   "customizations": {
