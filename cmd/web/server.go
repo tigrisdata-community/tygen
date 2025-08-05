@@ -156,7 +156,7 @@ func (s *Server) ImagegenStatus(w http.ResponseWriter, r *http.Request) {
 		Updated: &now,
 	}))
 
-	prompt := fmt.Sprintf("Attached is a reference image of the cartoon tiger Ty. Draw Ty in the following scenario:\n\nWhat is there?\n%s\n\nWhat is it like?\n%s\n\nWhat else is there?\n%s\n\nUse a %s style.", image.WhatIsThere, image.WhatIsItLike, image.WhereIsIt, image.Style)
+	prompt := image.Prompt()
 
 	lg.Info("making image")
 
