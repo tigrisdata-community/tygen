@@ -6,17 +6,16 @@ templ ImagePage(data *models.Image, imageURL string) {
 	<div id="parent" class="max-w-lg mx-auto">
 		<div id="thanks" class="p-6 bg-green-50 rounded-lg shadow space-y-4">
 			<h2 class="text-lg font-semibold text-green-800">
-				Thanks for your submission!
+				Here's Ty!
 			</h2>
-			<p><strong>ID</strong>: { data.UUID }</p>
+			<div class="m-2">
+				<a href={ imageURL } target="_blank"><img src={ imageURL }/></a>
+			</div>
 			<p><strong>What is there?</strong><br/>{ data.WhatIsThere }</p>
 			<p><strong>What is it like?</strong><br/>{ data.WhatIsItLike }</p>
 			<p><strong>Where is it?</strong><br/>{ data.WhereIsIt }</p>
 			<p><strong>Style selected:</strong><br/>{ data.Style }</p>
 			<br/>
-		</div>
-		<div class="m-2">
-			<a href={ imageURL } target="_blank"><img src={ imageURL }/></a>
 		</div>
 	</div>
 }

@@ -46,9 +46,15 @@ templ StreamingResponseChunk(data StreamingChunk) {
 		</div>
 	}
 	if data.ImageURL != "" {
-		<div id="img-container">
-			<img src={ data.ImageURL }/>
-		</div>
+		if data.Done {
+			<div id="img-container">
+				<img src={ data.ImageURL }/>
+			</div>
+		} else {
+			<div id="img-container" class="blur-sm">
+				<img src={ data.ImageURL }/>
+			</div>
+		}
 	}
 	if data.Error != "" {
 		<div id="parent">
