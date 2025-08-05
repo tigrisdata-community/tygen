@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -15,6 +16,11 @@ type Image struct {
 	Style        string
 	Finished     bool
 	URL          string
+}
+
+// Prompt generates the OpenAI image prompt for this image.
+func (i *Image) Prompt() string {
+	return fmt.Sprintf("Attached is a reference image of the cartoon tiger Ty. Draw Ty in the following scenario:\n\nWhat is there?\n%s\n\nWhat is it like?\n%s\n\nWhat else is there?\n%s\n\nUse a %s style.", i.WhatIsThere, i.WhatIsItLike, i.WhereIsIt, i.Style)
 }
 
 type ImageDAO struct {
